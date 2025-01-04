@@ -6,6 +6,8 @@ import { WebContentParser } from './webextractor';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { AiSession } from './deepseekAPI';
+import { executeTrends } from '../commands/trends';
+import { executeSummary } from '../commands/summary';
 
 export class DiscordService {
     private sessionManager: SessionManager;
@@ -59,6 +61,29 @@ export class DiscordService {
 
             const response = await session.aiSession.askApi(question);
             await waitingMessage.edit(response);
+        }
+
+        else if (message.content.startsWith('!summarize')) {
+            console.log(`Received summary request from server ${message.guildId}`);
+            const session = await this.sessionManager.getSession(message.guildId!);
+
+            if (!session) {
+                await message.reply('Session not initialized. Please initialize the bot first.');
+                return;
+            }
+
+            await executeSummary(message, session.aiSession);
+        }
+        else if (message.content.startsWith('!trends')) {
+            console.log(`Received trends request from server ${message.guildId}`);
+            const session = await this.sessionManager.getSession(message.guildId!);
+
+            if (!session) {
+                await message.reply('Session not initialized. Please initialize the bot first.');
+                return;
+            }
+
+            await executeTrends(message, session.aiSession);
         }
     }
 
